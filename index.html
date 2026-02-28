@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Innsbruck Namaz Vakitleri</title>
+<style>
+body {
+  margin:0;
+  background:black;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+  padding-top:40px;
+}
+h1 { font-size:60px; }
+.vakit { font-size:45px; margin:15px; }
+#clock { font-size:70px; margin-bottom:30px; color:gold; }
+</style>
+</head>
+<body>
+
+<h1>Innsbruck</h1>
+<div id="clock"></div>
+<div id="vakitler"></div>
+
+<script>
+
+function ezanCallback(response){
+  const t = response.data.timings;
+
+  document.getElementById("vakitler").innerHTML = `
+    <div class="vakit">İmsak: ${t.Fajr}</div>
+    <div class="vakit">Güneş: ${t.Sunrise}</div>
+    <div class="vakit">Öğle: ${t.Dhuhr}</div>
+    <div class="vakit">İkindi: ${t.Asr}</div>
+    <div class="vakit">Akşam: ${t.Maghrib}</div>
+    <div class="vakit">Yatsı: ${t.Isha}</div>
+  `;
+}
+
+function loadTimes(){
+  const script = document.createElement("script");
+  script.src = "https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13&callback=ezanCallback";
+  document.body.appendChild(script);
+}
+
+function updateClock(){
+  const now = new Date();
+  document.getElementById("clock").innerText =
+    now.toLocaleTimeString("de-AT");
+}
+
+setInterval(updateClock,1000);
+loadTimes();
+
+</script>
+
+</body>
+</html>
