@@ -1,8 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Innsbruck Namaz Vakitleri</title>
+<style>
+body {
+  margin:0;
+  background:black;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+  padding-top:40px;
+}
+h1 { font-size:60px; }
+.vakit { font-size:45px; margin:15px; }
+#clock { font-size:70px; margin-bottom:30px; color:gold; }
+</style>
+</head>
+<body>
+
+<h1>Innsbruck</h1>
+<div id="clock"></div>
+<div id="vakitler">Lade Gebetszeiten...</div>
+
 <script>
-async function loadTimes(){
-  try {
-    const res = await fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13");
-    const data = await res.json();
+
+function updateClock(){
+  const now = new Date();
+  document.getElementById("clock").innerText =
+    now.toLocaleTimeString("de-AT");
+}
+setInterval(updateClock,1000);
+updateClock();
+
+fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13")
+.then(response => response.json())
+.then(data => {
+    if(!data || !data.data){
+        document.getElementById("vakitler").innerText = "API Fehler";
+        return;
+    }
+
     const t = data.data.timings;
 
     document.getElementById("vakitler").innerHTML = `
@@ -13,18 +51,13 @@ async function loadTimes(){
       <div class="vakit">Akşam: ${t.Maghrib}</div>
       <div class="vakit">Yatsı: ${t.Isha}</div>
     `;
-  } catch (err) {
-    document.getElementById("vakitler").innerHTML = "Gebetszeiten konnten nicht geladen werden.";
-    console.error(err);
-  }
-}
+})
+.catch(error => {
+    document.getElementById("vakitler").innerText = "Fehler beim Laden";
+    console.error(error);
+});
 
-function updateClock(){
-  const now = new Date();
-  document.getElementById("clock").innerText =
-    now.toLocaleTimeString("de-AT");
-}
-
-setInterval(updateClock,1000);
-loadTimes();
 </script>
+
+</body>
+</html>
