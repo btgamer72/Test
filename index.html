@@ -25,6 +25,7 @@ h1 { font-size:60px; }
 
 <script>
 
+// Uhr
 function updateClock(){
   const now = new Date();
   document.getElementById("clock").innerText =
@@ -33,9 +34,20 @@ function updateClock(){
 setInterval(updateClock,1000);
 updateClock();
 
-fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13")
+// Minuten-Anpassung
+function adjust(time, minutes){
+  const [h,m] = time.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h);
+  d.setMinutes(m + minutes);
+  return d.toTimeString().slice(0,5);
+}
+
+// Gebetszeiten laden
+fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13&school=1")
 .then(response => response.json())
 .then(data => {
+
     if(!data || !data.data){
         document.getElementById("vakitler").innerText = "API Fehler";
         return;
@@ -44,12 +56,12 @@ fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&m
     const t = data.data.timings;
 
     document.getElementById("vakitler").innerHTML = `
-      <div class="vakit">İmsak: ${t.Fajr}</div>
+      <div class="vakit">İmsak: ${adjust(t.Fajr, 1)}</div>
       <div class="vakit">Güneş: ${t.Sunrise}</div>
       <div class="vakit">Öğle: ${t.Dhuhr}</div>
-      <div class="vakit">İkindi: ${t.Asr}</div>
-      <div class="vakit">Akşam: ${t.Maghrib}</div>
-      <div class="vakit">Yatsı: ${t.Isha}</div>
+      <div class="vakit">İkindi: ${adjust(t.Asr, 1)}</div>
+      <div class="vakit">Akşam: ${adjust(t.Maghrib, -1)}</div>
+      <div class="vakit">Yatsı: ${adjust(t.Isha, -7)}</div>
     `;
 })
 .catch(error => {
