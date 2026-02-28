@@ -43,8 +43,8 @@ function adjust(time, minutes){
   return d.toTimeString().slice(0,5);
 }
 
-// Gebetszeiten laden
-fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13&school=1")
+// Gebetszeiten laden (Diyanet, ohne school=1)
+fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13")
 .then(response => response.json())
 .then(data => {
 
