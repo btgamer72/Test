@@ -11,39 +11,38 @@ body {
   color:white;
   font-family:"Segoe UI", Arial, sans-serif;
   text-align:center;
-  padding:30px 20px;
+  padding:15px 20px; /* weniger Abstand oben */
 }
 
 h1 {
-  font-size:48px;
-  margin-bottom:15px;
-  letter-spacing:1px;
+  font-size:42px;
+  margin-bottom:10px;
 }
 
 #clock {
-  font-size:60px;
+  font-size:55px;
   color:#ffd700;
   margin-bottom:5px;
 }
 
 #countdown {
-  font-size:32px;
+  font-size:28px;
   color:#ff3b3b;
   font-weight:bold;
-  margin-bottom:20px;
+  margin-bottom:15px;
 }
 
 .line {
   width:70%;
   height:2px;
   background:#ffd700;
-  margin:15px auto;
+  margin:12px auto;
   opacity:0.6;
 }
 
 #gregorianDate,
 #hijriDate {
-  font-size:26px;
+  font-size:24px;
   font-weight:bold;
   color:#ffd700;
 }
@@ -53,8 +52,20 @@ h1 {
 }
 
 .vakit {
-  font-size:34px;
-  margin:10px 0;
+  font-size:30px;
+  margin:6px 0;
+}
+
+/* HADITH BOX */
+#hadithBox {
+  margin-top:20px;
+  padding:15px;
+  font-size:20px;
+  font-style:italic;
+  line-height:1.5;
+  background:rgba(255,255,255,0.08);
+  border-left:4px solid #ffd700;
+  border-radius:8px;
 }
 </style>
 </head>
@@ -75,11 +86,12 @@ h1 {
 
 <div id="vakitler">Lade Gebetszeiten...</div>
 
+<div id="hadithBox"></div>
+
 <script>
 
 let maghribTime = null;
 
-// Uhr
 function updateClock(){
   const now = new Date();
   document.getElementById("clock").innerText =
@@ -88,7 +100,6 @@ function updateClock(){
 setInterval(updateClock,1000);
 updateClock();
 
-// Zeitkorrektur
 function adjust(time, minutes){
   const parts = time.split(":");
   const d = new Date();
@@ -97,7 +108,6 @@ function adjust(time, minutes){
   return d.toTimeString().slice(0,5);
 }
 
-// Countdown
 function updateCountdown() {
   if (!maghribTime) return;
 
@@ -121,7 +131,6 @@ function updateCountdown() {
 }
 setInterval(updateCountdown,1000);
 
-// Türkische Gregorian Monate
 const gregorianMonthsTR = {
   January:"Ocak", February:"Şubat", March:"Mart",
   April:"Nisan", May:"Mayıs", June:"Haziran",
@@ -129,19 +138,12 @@ const gregorianMonthsTR = {
   October:"Ekim", November:"Kasım", December:"Aralık"
 };
 
-// 🔥 Bewusst wieder timingsByCity – das hat bei dir funktioniert
 fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13")
 .then(res => res.json())
 .then(data => {
 
-  if (!data || !data.data) {
-    document.getElementById("vakitler").innerText = "API Error";
-    return;
-  }
-
   const timings = data.data.timings;
 
-  // Gregorian Datum
   const greg = data.data.date.gregorian;
   const gregMonthName = greg.month.en || greg.month.name;
   const gregMonth = gregorianMonthsTR[gregMonthName] || gregMonthName;
@@ -149,12 +151,10 @@ fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&m
   document.getElementById("gregorianDate").innerText =
     greg.day + " " + gregMonth + " " + greg.year;
 
-  // Hijri Datum
   const hijri = data.data.date.hijri;
   document.getElementById("hijriDate").innerText =
     hijri.day + " " + hijri.month.en + " " + hijri.year + " AH";
 
-  // Maghrib Countdown
   const maghribAdjusted = adjust(timings.Maghrib, -1);
   const parts = maghribAdjusted.split(":");
 
@@ -163,7 +163,6 @@ fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&m
   maghribTime.setMinutes(parseInt(parts[1]));
   maghribTime.setSeconds(0);
 
-  // Gebetszeiten
   document.getElementById("vakitler").innerHTML = `
     <div class="vakit">İmsak: ${adjust(timings.Fajr,1)}</div>
     <div class="vakit">Güneş: ${timings.Sunrise}</div>
@@ -174,10 +173,70 @@ fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&m
   `;
 
 })
-.catch(err => {
+.catch(() => {
   document.getElementById("vakitler").innerText = "Fehler beim Laden";
-  console.error(err);
 });
+
+
+// 🔥 50 Hadithe
+const hadithler = [
+"Kolaylaştırınız, zorlaştırmayınız.\nMüjdeleyiniz, nefret ettirmeyiniz.",
+"İnsanların en hayırlısı insanlara faydalı olandır.",
+"Ameller niyetlere göredir.",
+"Gülümsemen sadakadır.",
+"Sabır imanın yarısıdır.",
+"Temizlik imandandır.",
+"Komşusu açken tok yatan bizden değildir.",
+"Merhamet etmeyene merhamet edilmez.",
+"İlim öğrenmek her Müslümana farzdır.",
+"Doğruluk iyiliğe götürür.",
+"Allah güzeldir, güzelliği sever.",
+"Kolay olanı seçiniz, zorlaştırmayınız.",
+"İki nimet vardır ki insanların çoğu onların kıymetini bilmez: Sağlık ve boş vakit.",
+"En güçlü kimse öfkesini yenendir.",
+"Sadaka belayı def eder.",
+"Yarım hurma ile de olsa ateşten sakının.",
+"Anne babaya iyilik cennetin kapısıdır.",
+"Kim Allah için tevazu gösterirse Allah onu yükseltir.",
+"Hayâ imandandır.",
+"Kalpler ancak Allah’ı anmakla huzur bulur.",
+"Bir mümin diğer mümine karşı bir binanın tuğlaları gibidir.",
+"Zarar vermek de yoktur, zarara zararla karşılık vermek de yoktur.",
+"Allah kuluna merhametlidir.",
+"Helal bellidir, haram bellidir.",
+"İyilik güzel ahlaktır.",
+"Dua ibadetin özüdür.",
+"Az da olsa devamlı olan amel daha hayırlıdır.",
+"Kendin için istediğini kardeşin için de istemedikçe iman etmiş olmazsın.",
+"Kim bir iyiliğe vesile olursa onun sevabı kadar sevap alır.",
+"Allah sabredenlerle beraberdir.",
+"Bir mümine sıkıntı veren her şey onun günahlarına kefarettir.",
+"Yoldan eziyet veren şeyi kaldırmak sadakadır.",
+"Allah yumuşaktır, yumuşaklığı sever.",
+"Doğru sözlü olunuz.",
+"Veren el alan elden hayırlıdır.",
+"Selamı yayınız.",
+"Bir mümini sevindirmek sadakadır.",
+"Kıyamet günü ameller niyetlere göre tartılır.",
+"Kim affederse Allah da onu affeder.",
+"Allah kalplere bakar.",
+"İlim Çin’de bile olsa gidip alınız.",
+"Hayır söyle ya da sus.",
+"En hayırlı azık takvadır.",
+"Zenginlik mal çokluğu değildir, gönül zenginliğidir.",
+"Allah’a tevekkül eden kimseye Allah yeter.",
+"Sabreden zafere ulaşır.",
+"Kim bir Müslümanın ayıbını örterse Allah da onun ayıbını örter.",
+"Allah kuluna şah damarından daha yakındır.",
+"Dünya müminin zindanı, kâfirin cennetidir.",
+"İstişare eden pişman olmaz."
+];
+
+// Gün numarasına göre seçim
+const today = new Date();
+const index = today.getDate() % hadithler.length;
+
+document.getElementById("hadithBox").innerText = hadithler[index];
 
 </script>
 
