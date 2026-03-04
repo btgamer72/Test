@@ -12,21 +12,53 @@ body {
   text-align:center;
   padding-top:20px;
 }
-h1 { font-size:60px; }
-.vakit { font-size:45px; margin:30px; }
-#clock { font-size:70px; margin-bottom:10px; color:gold; }
-#countdown { font-size:45px; margin-bottom:15px; color:#ff3b3b; font-weight:bold; }
-#gregorianDate { font-size:28px; }
-#hijriDate { font-size:30px; margin-bottom:30px; }
+
+h1 { 
+  font-size:60px; 
+}
+
+.vakit { 
+  font-size:45px; 
+  margin:30px; 
+}
+
+#clock { 
+  font-size:70px; 
+  margin-bottom:10px; 
+  color:gold; 
+}
+
+#countdown { 
+  font-size:45px; 
+  margin-bottom:15px; 
+  color:#ff3b3b; 
+  font-weight:bold; 
+}
+
+#gregorianDate {
+  font-size:34px;
+  font-weight:bold;
+  letter-spacing:1px;
+}
+
+#hijriDate {
+  font-size:40px;
+  font-weight:bold;
+  margin-bottom:30px;
+  color:#ffd700;
+  letter-spacing:1px;
+}
 </style>
 </head>
 <body>
 
 <h1>Innsbruck</h1>
+
 <div id="clock"></div>
 <div id="countdown"></div>
 <div id="gregorianDate"></div>
 <div id="hijriDate"></div>
+
 <div id="vakitler">Lade Gebetszeiten...</div>
 
 <script>
@@ -42,12 +74,12 @@ function updateClock(){
 setInterval(updateClock,1000);
 updateClock();
 
-// Minuten-Anpassung
+// Zeitkorrektur
 function adjust(time, minutes){
-  const [h,m] = time.split(":").map(Number);
+  const parts = time.split(":");
   const d = new Date();
-  d.setHours(h);
-  d.setMinutes(m + minutes);
+  d.setHours(parseInt(parts[0]));
+  d.setMinutes(parseInt(parts[1]) + minutes);
   return d.toTimeString().slice(0,5);
 }
 
@@ -63,79 +95,72 @@ function updateCountdown() {
     return;
   }
 
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const minutes = Math.floor((diff / (1000 * 60)) % 60);
-  const seconds = Math.floor((diff / 1000) % 60);
+  const hours = Math.floor(diff / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  const seconds = Math.floor((diff % 60000) / 1000);
 
   document.getElementById("countdown").innerText =
     "Maghrib'e kalan: " +
-    String(hours).padStart(2, '0') + ":" +
-    String(minutes).padStart(2, '0') + ":" +
-    String(seconds).padStart(2, '0');
+    String(hours).padStart(2,'0') + ":" +
+    String(minutes).padStart(2,'0') + ":" +
+    String(seconds).padStart(2,'0');
 }
-setInterval(updateCountdown, 1000);
+setInterval(updateCountdown,1000);
 
-// Türkische Gregorian Monatsnamen
+// Türkische Gregorian Monate
 const gregorianMonthsTR = {
-  "January": "Ocak",
-  "February": "Şubat",
-  "March": "Mart",
-  "April": "Nisan",
-  "May": "Mayıs",
-  "June": "Haziran",
-  "July": "Temmuz",
-  "August": "Ağustos",
-  "September": "Eylül",
-  "October": "Ekim",
-  "November": "Kasım",
-  "December": "Aralık"
+  January:"Ocak", February:"Şubat", March:"Mart",
+  April:"Nisan", May:"Mayıs", June:"Haziran",
+  July:"Temmuz", August:"Ağustos", September:"Eylül",
+  October:"Ekim", November:"Kasım", December:"Aralık"
 };
 
-// Gebetszeiten laden
+// API laden
 fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13")
-.then(response => response.json())
+.then(res => res.json())
 .then(data => {
 
-    if(!data || !data.data){
-        document.getElementById("vakitler").innerText = "API Error";
-        return;
-    }
+  if (!data || !data.data) {
+    document.getElementById("vakitler").innerText = "API Error";
+    return;
+  }
 
-    const t = data.data.timings;
+  const timings = data.data.timings;
 
-    // Gregorian Datum (Türkisch übersetzt)
-    const greg = data.data.date.gregorian;
-    const gregMonthTR = gregorianMonthsTR[greg.month.name] || greg.month.name;
+  // Gregorian Datum (Türkisch)
+  const greg = data.data.date.gregorian;
+  const gregMonth = gregorianMonthsTR[greg.month.name] || greg.month.name;
+  document.getElementById("gregorianDate").innerText =
+    greg.day + " " + gregMonth + " " + greg.year;
 
-    document.getElementById("gregorianDate").innerText =
-      greg.day + " " + gregMonthTR + " " + greg.year;
+  // Hijri Datum (Arabisch transliteriert)
+  const hijri = data.data.date.hijri;
+  document.getElementById("hijriDate").innerText =
+    hijri.day + " " + hijri.month.en + " " + hijri.year + " AH";
 
-    // Hijri Datum (arabische Transliteration wie zuvor)
-    const hijri = data.data.date.hijri;
-    document.getElementById("hijriDate").innerText =
-      hijri.day + " " + hijri.month.en + " " + hijri.year + " AH";
+  // Maghrib Countdown setzen
+  const maghribAdjusted = adjust(timings.Maghrib, -1);
+  const parts = maghribAdjusted.split(":");
 
-    // Maghrib Countdown setzen
-    const maghribAdjusted = adjust(t.Maghrib, -1);
-    const [h, m] = maghribAdjusted.split(":").map(Number);
+  maghribTime = new Date();
+  maghribTime.setHours(parseInt(parts[0]));
+  maghribTime.setMinutes(parseInt(parts[1]));
+  maghribTime.setSeconds(0);
 
-    maghribTime = new Date();
-    maghribTime.setHours(h);
-    maghribTime.setMinutes(m);
-    maghribTime.setSeconds(0);
+  // Gebetszeiten anzeigen
+  document.getElementById("vakitler").innerHTML = `
+    <div class="vakit">İmsak: ${adjust(timings.Fajr,1)}</div>
+    <div class="vakit">Güneş: ${timings.Sunrise}</div>
+    <div class="vakit">Öğle: ${timings.Dhuhr}</div>
+    <div class="vakit">İkindi: ${adjust(timings.Asr,1)}</div>
+    <div class="vakit">Akşam: ${maghribAdjusted}</div>
+    <div class="vakit">Yatsı: ${adjust(timings.Isha,-7)}</div>
+  `;
 
-    document.getElementById("vakitler").innerHTML = `
-      <div class="vakit">İmsak: ${adjust(t.Fajr, 1)}</div>
-      <div class="vakit">Güneş: ${t.Sunrise}</div>
-      <div class="vakit">Öğle: ${t.Dhuhr}</div>
-      <div class="vakit">İkindi: ${adjust(t.Asr, 1)}</div>
-      <div class="vakit">Akşam: ${magribAdjusted}</div>
-      <div class="vakit">Yatsı: ${adjust(t.Isha, -7)}</div>
-    `;
 })
-.catch(error => {
-    document.getElementById("vakitler").innerText = "Fehler beim Laden";
-    console.error(error);
+.catch(err => {
+  document.getElementById("vakitler").innerText = "Fehler beim Laden";
+  console.error(err);
 });
 
 </script>
