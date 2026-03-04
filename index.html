@@ -1,7 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Namaz Vakitleri</title>
+
+<style>
+body {
+  margin:0;
+  background:#0b4f63;
+  color:white;
+  font-family:"Segoe UI", Arial, sans-serif;
+  text-align:center;
+  padding:30px 20px;
+}
+
+h1 {
+  font-size:48px;
+  margin-bottom:15px;
+  letter-spacing:1px;
+}
+
+#clock {
+  font-size:60px;
+  color:#ffd700;
+  margin-bottom:5px;
+}
+
+#countdown {
+  font-size:32px;
+  color:#ff3b3b;
+  font-weight:bold;
+  margin-bottom:20px;
+}
+
+.line {
+  width:70%;
+  height:2px;
+  background:#ffd700;
+  margin:15px auto;
+  opacity:0.6;
+}
+
+#gregorianDate,
+#hijriDate {
+  font-size:26px;
+  font-weight:bold;
+  color:#ffd700;
+}
+
+#hijriDate {
+  margin-bottom:10px;
+}
+
+.vakit {
+  font-size:34px;
+  margin:10px 0;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Innsbruck</h1>
+
+<div id="clock"></div>
+<div id="countdown"></div>
+
+<div class="line"></div>
+
+<div id="gregorianDate"></div>
+<div id="hijriDate"></div>
+
+<div class="line"></div>
+
+<div id="vakitler">Lade Gebetszeiten...</div>
+
 <script>
 
 let maghribTime = null;
 
+// Uhr
 function updateClock(){
   const now = new Date();
   document.getElementById("clock").innerText =
@@ -10,6 +88,7 @@ function updateClock(){
 setInterval(updateClock,1000);
 updateClock();
 
+// Zeitkorrektur
 function adjust(time, minutes){
   const parts = time.split(":");
   const d = new Date();
@@ -18,6 +97,7 @@ function adjust(time, minutes){
   return d.toTimeString().slice(0,5);
 }
 
+// Countdown
 function updateCountdown() {
   if (!maghribTime) return;
 
@@ -41,6 +121,7 @@ function updateCountdown() {
 }
 setInterval(updateCountdown,1000);
 
+// Türkische Gregorian Monate
 const gregorianMonthsTR = {
   January:"Ocak", February:"Şubat", March:"Mart",
   April:"Nisan", May:"Mayıs", June:"Haziran",
@@ -48,20 +129,19 @@ const gregorianMonthsTR = {
   October:"Ekim", November:"Kasım", December:"Aralık"
 };
 
-// 🔥 WICHTIG: Neuer Endpoint mit Koordinaten
-fetch("https://api.aladhan.com/v1/timings?latitude=47.2692&longitude=11.4041&method=13")
-.then(res => {
-  if (!res.ok) throw new Error("HTTP Fehler");
-  return res.json();
-})
+// 🔥 Bewusst wieder timingsByCity – das hat bei dir funktioniert
+fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13")
+.then(res => res.json())
 .then(data => {
 
   if (!data || !data.data) {
-    throw new Error("Ungültige API Antwort");
+    document.getElementById("vakitler").innerText = "API Error";
+    return;
   }
 
   const timings = data.data.timings;
 
+  // Gregorian Datum
   const greg = data.data.date.gregorian;
   const gregMonthName = greg.month.en || greg.month.name;
   const gregMonth = gregorianMonthsTR[gregMonthName] || gregMonthName;
@@ -69,10 +149,12 @@ fetch("https://api.aladhan.com/v1/timings?latitude=47.2692&longitude=11.4041&met
   document.getElementById("gregorianDate").innerText =
     greg.day + " " + gregMonth + " " + greg.year;
 
+  // Hijri Datum
   const hijri = data.data.date.hijri;
   document.getElementById("hijriDate").innerText =
     hijri.day + " " + hijri.month.en + " " + hijri.year + " AH";
 
+  // Maghrib Countdown
   const maghribAdjusted = adjust(timings.Maghrib, -1);
   const parts = maghribAdjusted.split(":");
 
@@ -81,19 +163,23 @@ fetch("https://api.aladhan.com/v1/timings?latitude=47.2692&longitude=11.4041&met
   maghribTime.setMinutes(parseInt(parts[1]));
   maghribTime.setSeconds(0);
 
+  // Gebetszeiten
   document.getElementById("vakitler").innerHTML = `
     <div class="vakit">İmsak: ${adjust(timings.Fajr,1)}</div>
     <div class="vakit">Güneş: ${timings.Sunrise}</div>
     <div class="vakit">Öğle: ${timings.Dhuhr}</div>
     <div class="vakit">İkindi: ${adjust(timings.Asr,1)}</div>
-    <div class="vakit">Akşam: ${magribAdjusted}</div>
+    <div class="vakit">Akşam: ${maghribAdjusted}</div>
     <div class="vakit">Yatsı: ${adjust(timings.Isha,-7)}</div>
   `;
 
 })
 .catch(err => {
-  document.getElementById("vakitler").innerText = "Fehler beim Laden der API";
-  console.error("API Fehler:", err);
+  document.getElementById("vakitler").innerText = "Fehler beim Laden";
+  console.error(err);
 });
 
 </script>
+
+</body>
+</html>
