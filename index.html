@@ -102,7 +102,6 @@ updateClock();
 
 // Zeitkorrektur
 function adjust(time, minutes){
-  if (!time) return "--:--";
   const parts = time.split(":");
   const d = new Date();
   d.setHours(parseInt(parts[0]));
@@ -118,7 +117,7 @@ function updateCountdown() {
   const diff = maghribTime - now;
 
   if (diff <= 0) {
-    document.getElementById("countdown").innerText = "Maghrib vakti!";
+    document.getElementById("countdown").innerText = "Maghrib time!";
     return;
   }
 
@@ -142,34 +141,24 @@ const gregorianMonthsTR = {
   October:"Ekim", November:"Kasım", December:"Aralık"
 };
 
-// API laden (stabil abgesichert)
+// Gebetszeiten laden
 fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13")
-.then(response => {
-  if (!response.ok) throw new Error("HTTP Fehler");
-  return response.json();
-})
+.then(res => res.json())
 .then(data => {
-
-  if (!data || !data.data || !data.data.timings) {
-    throw new Error("Ungültige API Antwort");
-  }
 
   const timings = data.data.timings;
 
-  // Gregorian Datum
   const greg = data.data.date.gregorian;
-  const gregMonthName = greg.month?.en || greg.month?.name || "";
+  const gregMonthName = greg.month.en || greg.month.name;
   const gregMonth = gregorianMonthsTR[gregMonthName] || gregMonthName;
 
   document.getElementById("gregorianDate").innerText =
-    `${greg.day} ${gregMonth} ${greg.year}`;
+    greg.day + " " + gregMonth + " " + greg.year;
 
-  // Hijri Datum
   const hijri = data.data.date.hijri;
   document.getElementById("hijriDate").innerText =
-    `${hijri.day} ${hijri.month.en} ${hijri.year} AH`;
+    hijri.day + " " + hijri.month.en + " " + hijri.year + " AH";
 
-  // Maghrib Countdown
   const maghribAdjusted = adjust(timings.Maghrib, -1);
   const parts = maghribAdjusted.split(":");
 
@@ -178,7 +167,6 @@ fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&m
   maghribTime.setMinutes(parseInt(parts[1]));
   maghribTime.setSeconds(0);
 
-  // Gebetszeiten
   document.getElementById("vakitler").innerHTML = `
     <div class="vakit">İmsak: ${adjust(timings.Fajr,1)}</div>
     <div class="vakit">Güneş: ${timings.Sunrise}</div>
@@ -189,9 +177,8 @@ fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&m
   `;
 
 })
-.catch(error => {
-  document.getElementById("vakitler").innerText = "Gebetszeiten konnten nicht geladen werden";
-  console.error(error);
+.catch(() => {
+  document.getElementById("vakitler").innerText = "Fehler beim Laden";
 });
 
 // 50 Hadithe
