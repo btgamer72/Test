@@ -14,16 +14,20 @@ body {
 }
 h1 { font-size:60px; }
 .vakit { font-size:45px; margin:30px; }
-#clock { font-size:70px; margin-bottom:30px; color:gold; }
+#clock { font-size:70px; margin-bottom:10px; color:gold; }
+#countdown { font-size:40px; margin-bottom:30px; color:#00ffcc; }
 </style>
 </head>
 <body>
 
 <h1>Innsbruck</h1>
 <div id="clock"></div>
+<div id="countdown"></div>
 <div id="vakitler">Lade Gebetszeiten...</div>
 
 <script>
+
+let maghribTime = null;
 
 // Uhr
 function updateClock(){
@@ -43,7 +47,32 @@ function adjust(time, minutes){
   return d.toTimeString().slice(0,5);
 }
 
-// Gebetszeiten laden (Diyanet, ohne school=1)
+// Countdown Funktion
+function updateCountdown() {
+  if (!maghribTime) return;
+
+  const now = new Date();
+  const diff = maghribTime - now;
+
+  if (diff <= 0) {
+    document.getElementById("countdown").innerText = "Magrib zamanı!";
+    return;
+  }
+
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+
+  document.getElementById("countdown").innerText =
+    "Magrib'e kalan: " +
+    String(hours).padStart(2, '0') + ":" +
+    String(minutes).padStart(2, '0') + ":" +
+    String(seconds).padStart(2, '0');
+}
+
+setInterval(updateCountdown, 1000);
+
+// Gebetszeiten laden
 fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13")
 .then(response => response.json())
 .then(data => {
@@ -55,12 +84,20 @@ fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&m
 
     const t = data.data.timings;
 
+    const magribAdjusted = adjust(t.Maghrib, -1);
+    const [h, m] = magribAdjusted.split(":").map(Number);
+
+    maghribTime = new Date();
+    maghribTime.setHours(h);
+    maghribTime.setMinutes(m);
+    maghribTime.setSeconds(0);
+
     document.getElementById("vakitler").innerHTML = `
       <div class="vakit">İmsak: ${adjust(t.Fajr, 1)}</div>
       <div class="vakit">Güneş: ${t.Sunrise}</div>
       <div class="vakit">Öğle: ${t.Dhuhr}</div>
       <div class="vakit">İkindi: ${adjust(t.Asr, 1)}</div>
-      <div class="vakit">Akşam: ${adjust(t.Maghrib, -1)}</div>
+      <div class="vakit">Akşam: ${magribAdjusted}</div>
       <div class="vakit">Yatsı: ${adjust(t.Isha, -7)}</div>
     `;
 })
