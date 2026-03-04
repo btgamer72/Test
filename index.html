@@ -68,27 +68,27 @@ function updateCountdown() {
   const seconds = Math.floor((diff / 1000) % 60);
 
   document.getElementById("countdown").innerText =
-    "Time until Maghrib: " +
+    "Maghrib'e kalan: " +
     String(hours).padStart(2, '0') + ":" +
     String(minutes).padStart(2, '0') + ":" +
     String(seconds).padStart(2, '0');
 }
 setInterval(updateCountdown, 1000);
 
-// Arabische Monatsnamen (Transliteration)
-const hijriMonthsArabicLatin = {
-  "Muharram": "Muharram",
-  "Safar": "Safar",
-  "Rabi' al-awwal": "Rabi al-Awwal",
-  "Rabi' al-thani": "Rabi al-Thani",
-  "Jumada al-awwal": "Jumada al-Ula",
-  "Jumada al-thani": "Jumada al-Akhirah",
-  "Rajab": "Rajab",
-  "Sha'ban": "Sha'ban",
-  "Ramadan": "Ramadan",
-  "Shawwal": "Shawwal",
-  "Dhu al-Qi'dah": "Dhul Qa'dah",
-  "Dhu al-Hijjah": "Dhul Hijjah"
+// Türkische Gregorian Monatsnamen
+const gregorianMonthsTR = {
+  "January": "Ocak",
+  "February": "Şubat",
+  "March": "Mart",
+  "April": "Nisan",
+  "May": "Mayıs",
+  "June": "Haziran",
+  "July": "Temmuz",
+  "August": "Ağustos",
+  "September": "Eylül",
+  "October": "Ekim",
+  "November": "Kasım",
+  "December": "Aralık"
 };
 
 // Gebetszeiten laden
@@ -103,19 +103,19 @@ fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&m
 
     const t = data.data.timings;
 
-    // Gregorianisches Datum
+    // Gregorian Datum (Türkisch übersetzt)
     const greg = data.data.date.gregorian;
+    const gregMonthTR = gregorianMonthsTR[greg.month.name] || greg.month.name;
+
     document.getElementById("gregorianDate").innerText =
-      greg.day + " " + greg.month.en + " " + greg.year;
+      greg.day + " " + gregMonthTR + " " + greg.year;
 
-    // Hijri Datum mit arabischer Transliteration
+    // Hijri Datum (arabische Transliteration wie zuvor)
     const hijri = data.data.date.hijri;
-    const hijriMonthLatin = hijriMonthsArabicLatin[hijri.month.en] || hijri.month.en;
-
     document.getElementById("hijriDate").innerText =
-      hijri.day + " " + hijriMonthLatin + " " + hijri.year + " AH";
+      hijri.day + " " + hijri.month.en + " " + hijri.year + " AH";
 
-    // Maghrib Countdown
+    // Maghrib Countdown setzen
     const maghribAdjusted = adjust(t.Maghrib, -1);
     const [h, m] = maghribAdjusted.split(":").map(Number);
 
@@ -125,16 +125,16 @@ fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&m
     maghribTime.setSeconds(0);
 
     document.getElementById("vakitler").innerHTML = `
-      <div class="vakit">Fajr: ${adjust(t.Fajr, 1)}</div>
-      <div class="vakit">Sunrise: ${t.Sunrise}</div>
-      <div class="vakit">Dhuhr: ${t.Dhuhr}</div>
-      <div class="vakit">Asr: ${adjust(t.Asr, 1)}</div>
-      <div class="vakit">Maghrib: ${maghribAdjusted}</div>
-      <div class="vakit">Isha: ${adjust(t.Isha, -7)}</div>
+      <div class="vakit">İmsak: ${adjust(t.Fajr, 1)}</div>
+      <div class="vakit">Güneş: ${t.Sunrise}</div>
+      <div class="vakit">Öğle: ${t.Dhuhr}</div>
+      <div class="vakit">İkindi: ${adjust(t.Asr, 1)}</div>
+      <div class="vakit">Akşam: ${magribAdjusted}</div>
+      <div class="vakit">Yatsı: ${adjust(t.Isha, -7)}</div>
     `;
 })
 .catch(error => {
-    document.getElementById("vakitler").innerText = "Error loading data";
+    document.getElementById("vakitler").innerText = "Fehler beim Laden";
     console.error(error);
 });
 
