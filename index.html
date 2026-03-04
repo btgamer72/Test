@@ -1,87 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Namaz Vakitleri</title>
-
-<style>
-body {
-  margin:0;
-  background:#0b4f63;
-  color:white;
-  font-family:"Segoe UI", Arial, sans-serif;
-  text-align:center;
-  padding:30px 20px;
-}
-
-/* Titel */
-h1 {
-  font-size:48px;
-  margin-bottom:15px;
-  letter-spacing:1px;
-}
-
-/* Uhr */
-#clock {
-  font-size:60px;
-  color:#ffd700;
-  margin-bottom:5px;
-}
-
-/* Countdown */
-#countdown {
-  font-size:32px;
-  color:#ff3b3b;
-  font-weight:bold;
-  margin-bottom:20px;
-}
-
-/* Goldene Linie */
-.line {
-  width:70%;
-  height:2px;
-  background:#ffd700;
-  margin:15px auto;
-  opacity:0.6;
-}
-
-/* Daten */
-#gregorianDate,
-#hijriDate {
-  font-size:26px;
-  font-weight:bold;
-  color:#ffd700;
-}
-
-#hijriDate {
-  margin-bottom:10px;
-}
-
-/* Gebetszeiten */
-.vakit {
-  font-size:34px;
-  margin:10px 0;
-}
-
-</style>
-</head>
-
-<body>
-
-<h1>Innsbruck</h1>
-
-<div id="clock"></div>
-<div id="countdown"></div>
-
-<div class="line"></div>
-
-<div id="gregorianDate"></div>
-<div id="hijriDate"></div>
-
-<div class="line"></div>
-
-<div id="vakitler">Lade Gebetszeiten...</div>
-
 <script>
 
 let maghribTime = null;
@@ -132,13 +48,16 @@ const gregorianMonthsTR = {
   October:"Ekim", November:"Kasım", December:"Aralık"
 };
 
-fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13")
-.then(res => res.json())
+// 🔥 WICHTIG: Neuer Endpoint mit Koordinaten
+fetch("https://api.aladhan.com/v1/timings?latitude=47.2692&longitude=11.4041&method=13")
+.then(res => {
+  if (!res.ok) throw new Error("HTTP Fehler");
+  return res.json();
+})
 .then(data => {
 
   if (!data || !data.data) {
-    document.getElementById("vakitler").innerText = "API Error";
-    return;
+    throw new Error("Ungültige API Antwort");
   }
 
   const timings = data.data.timings;
@@ -173,11 +92,8 @@ fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&m
 
 })
 .catch(err => {
-  document.getElementById("vakitler").innerText = "Fehler beim Laden";
-  console.error(err);
+  document.getElementById("vakitler").innerText = "Fehler beim Laden der API";
+  console.error("API Fehler:", err);
 });
 
 </script>
-
-</body>
-</html>
