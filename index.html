@@ -4,25 +4,25 @@
 <meta charset="UTF-8">
 <title>Namaz Vakitleri</title>
 
+<style>
 body {
   margin:0;
   background:#0b4f63;
   color:white;
   font-family:"Segoe UI", Arial, sans-serif;
   text-align:center;
-  padding:25px 20px 35px 20px; /* oben + unten mehr Luft */
+  padding:25px 20px 40px 20px;
 }
 
 h1 {
   font-size:46px;
   margin-bottom:15px;
-  letter-spacing:1px;
 }
 
 #clock {
   font-size:62px;
   color:#ffd700;
-  margin-bottom:10px;
+  margin-bottom:8px;
 }
 
 #countdown {
@@ -51,18 +51,15 @@ h1 {
   margin-bottom:15px;
 }
 
-/* GEBETSZEITEN größer + mehr Abstand */
 .vakit {
-  font-size:36px;   /* größer */
-  margin:14px 0;    /* mehr Abstand */
-  letter-spacing:0.5px;
+  font-size:36px;
+  margin:14px 0;
 }
 
-/* HADITH */
 #hadithBox {
-  margin-top:30px;
+  margin-top:35px;
   padding:18px;
-  font-size:22px;      /* etwas größer */
+  font-size:22px;
   font-style:italic;
   line-height:1.6;
   background:rgba(255,255,255,0.08);
@@ -94,6 +91,7 @@ h1 {
 
 let maghribTime = null;
 
+// Uhr
 function updateClock(){
   const now = new Date();
   document.getElementById("clock").innerText =
@@ -102,6 +100,7 @@ function updateClock(){
 setInterval(updateClock,1000);
 updateClock();
 
+// Zeitkorrektur
 function adjust(time, minutes){
   const parts = time.split(":");
   const d = new Date();
@@ -110,6 +109,7 @@ function adjust(time, minutes){
   return d.toTimeString().slice(0,5);
 }
 
+// Countdown
 function updateCountdown() {
   if (!maghribTime) return;
 
@@ -133,6 +133,7 @@ function updateCountdown() {
 }
 setInterval(updateCountdown,1000);
 
+// Türkische Monate
 const gregorianMonthsTR = {
   January:"Ocak", February:"Şubat", March:"Mart",
   April:"Nisan", May:"Mayıs", June:"Haziran",
@@ -140,6 +141,7 @@ const gregorianMonthsTR = {
   October:"Ekim", November:"Kasım", December:"Aralık"
 };
 
+// Gebetszeiten laden
 fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&method=13")
 .then(res => res.json())
 .then(data => {
@@ -179,10 +181,9 @@ fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&m
   document.getElementById("vakitler").innerText = "Fehler beim Laden";
 });
 
-
-// 🔥 50 Hadithe
+// 50 Hadithe
 const hadithler = [
-"Kolaylaştırınız, zorlaştırmayınız.\nMüjdeleyiniz, nefret ettirmeyiniz.",
+"Kolaylaştırınız, zorlaştırmayınız.",
 "İnsanların en hayırlısı insanlara faydalı olandır.",
 "Ameller niyetlere göredir.",
 "Gülümsemen sadakadır.",
@@ -193,51 +194,49 @@ const hadithler = [
 "İlim öğrenmek her Müslümana farzdır.",
 "Doğruluk iyiliğe götürür.",
 "Allah güzeldir, güzelliği sever.",
-"Kolay olanı seçiniz, zorlaştırmayınız.",
-"İki nimet vardır ki insanların çoğu onların kıymetini bilmez: Sağlık ve boş vakit.",
+"İki nimet vardır: Sağlık ve boş vakit.",
 "En güçlü kimse öfkesini yenendir.",
 "Sadaka belayı def eder.",
-"Yarım hurma ile de olsa ateşten sakının.",
 "Anne babaya iyilik cennetin kapısıdır.",
-"Kim Allah için tevazu gösterirse Allah onu yükseltir.",
+"Kim affederse Allah da onu affeder.",
 "Hayâ imandandır.",
-"Kalpler ancak Allah’ı anmakla huzur bulur.",
-"Bir mümin diğer mümine karşı bir binanın tuğlaları gibidir.",
-"Zarar vermek de yoktur, zarara zararla karşılık vermek de yoktur.",
-"Allah kuluna merhametlidir.",
-"Helal bellidir, haram bellidir.",
-"İyilik güzel ahlaktır.",
 "Dua ibadetin özüdür.",
-"Az da olsa devamlı olan amel daha hayırlıdır.",
-"Kendin için istediğini kardeşin için de istemedikçe iman etmiş olmazsın.",
-"Kim bir iyiliğe vesile olursa onun sevabı kadar sevap alır.",
+"Az da olsa devamlı amel hayırlıdır.",
 "Allah sabredenlerle beraberdir.",
-"Bir mümine sıkıntı veren her şey onun günahlarına kefarettir.",
 "Yoldan eziyet veren şeyi kaldırmak sadakadır.",
-"Allah yumuşaktır, yumuşaklığı sever.",
-"Doğru sözlü olunuz.",
 "Veren el alan elden hayırlıdır.",
 "Selamı yayınız.",
 "Bir mümini sevindirmek sadakadır.",
-"Kıyamet günü ameller niyetlere göre tartılır.",
-"Kim affederse Allah da onu affeder.",
 "Allah kalplere bakar.",
-"İlim Çin’de bile olsa gidip alınız.",
 "Hayır söyle ya da sus.",
-"En hayırlı azık takvadır.",
-"Zenginlik mal çokluğu değildir, gönül zenginliğidir.",
-"Allah’a tevekkül eden kimseye Allah yeter.",
+"Zenginlik gönül zenginliğidir.",
 "Sabreden zafere ulaşır.",
-"Kim bir Müslümanın ayıbını örterse Allah da onun ayıbını örter.",
 "Allah kuluna şah damarından daha yakındır.",
-"Dünya müminin zindanı, kâfirin cennetidir.",
-"İstişare eden pişman olmaz."
+"İstişare eden pişman olmaz.",
+"Helal bellidir, haram bellidir.",
+"İyilik güzel ahlaktır.",
+"Doğru sözlü olunuz.",
+"Allah’a tevekkül eden kimseye Allah yeter.",
+"En hayırlı azık takvadır.",
+"Allah yumuşaktır, yumuşaklığı sever.",
+"Kim tevazu gösterirse Allah onu yükseltir.",
+"Kalpler Allah’ı anmakla huzur bulur.",
+"Bir mümin diğer mümine duvar gibidir.",
+"Merhamet etmeyene merhamet edilmez.",
+"Temizlik imandandır.",
+"Sabır acıdır, meyvesi tatlıdır.",
+"İlim en büyük hazinedir.",
+"Allah kuluna merhametlidir.",
+"İyilik eden iyilik bulur.",
+"Affetmek büyüklüktür.",
+"Allah sabredenleri sever.",
+"Kötülüğü iyilikle sav.",
+"Allah doğruları sever.",
+"Dünya geçicidir, ahiret kalıcıdır."
 ];
 
-// Gün numarasına göre seçim
 const today = new Date();
 const index = today.getDate() % hadithler.length;
-
 document.getElementById("hadithBox").innerText = hadithler[index];
 
 </script>
