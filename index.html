@@ -16,6 +16,7 @@ h1 { font-size:60px; }
 .vakit { font-size:45px; margin:30px; }
 #clock { font-size:70px; margin-bottom:10px; color:gold; }
 #countdown { font-size:45px; margin-bottom:15px; color:#ff3b3b; font-weight:bold; }
+#gregorianDate { font-size:28px; }
 #hijriDate { font-size:30px; margin-bottom:30px; }
 </style>
 </head>
@@ -24,6 +25,7 @@ h1 { font-size:60px; }
 <h1>Innsbruck</h1>
 <div id="clock"></div>
 <div id="countdown"></div>
+<div id="gregorianDate"></div>
 <div id="hijriDate"></div>
 <div id="vakitler">Lade Gebetszeiten...</div>
 
@@ -49,7 +51,7 @@ function adjust(time, minutes){
   return d.toTimeString().slice(0,5);
 }
 
-// Countdown Funktion
+// Countdown
 function updateCountdown() {
   if (!maghribTime) return;
 
@@ -71,7 +73,6 @@ function updateCountdown() {
     String(minutes).padStart(2, '0') + ":" +
     String(seconds).padStart(2, '0');
 }
-
 setInterval(updateCountdown, 1000);
 
 // Gebetszeiten laden
@@ -86,14 +87,17 @@ fetch("https://api.aladhan.com/v1/timingsByCity?city=Innsbruck&country=Austria&m
 
     const t = data.data.timings;
 
-    // Hijri Datum (Türkisch)
+    // Gregorianisches Datum (aus API)
+    const greg = data.data.date.gregorian;
+    document.getElementById("gregorianDate").innerText =
+      greg.day + " " + greg.month.tr + " " + greg.year;
+
+    // Hijri Datum
     const hijri = data.data.date.hijri;
     document.getElementById("hijriDate").innerText =
-      hijri.day + " " +
-      hijri.month.tr + " " +
-      hijri.year;
+      hijri.day + " " + hijri.month.tr + " " + hijri.year;
 
-    // Magrib Countdown setzen
+    // Magrib Countdown
     const magribAdjusted = adjust(t.Maghrib, -1);
     const [h, m] = magribAdjusted.split(":").map(Number);
 
